@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BaresTKD Certificate Printer</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Certificates">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/barestkd-cyber/curriculum/main/BaresTKDPatch.png">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Oswald:wght@700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #777; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; gap: 16px; min-height: 100vh; }
+
+.controls {
+  background: #222; color: white; padding: 14px 20px;
+  border-radius: 8px; display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap;
+}
+.controls label { display: block; font-size: 0.72rem; color: #aaa; margin-bottom: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
+.controls input, .controls select { padding: 6px 10px; background: #111; border: 1px solid #444; border-radius: 4px; color: white; font-size: 0.85rem; outline: none; }
+.controls input { width: 200px; }
+.ctrl-btn { padding: 8px 20px; background: #c0152a; border: none; border-radius: 4px; color: white; font-size: 0.85rem; cursor: pointer; }
+
+/* PAGE */
+.cert-page {
+  width: 11in; height: 8.5in;
+  position: relative;
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* no ornate frame */
+
+/* CERT body */
+.cert {
+  width: 10.3in; height: 7.85in;
+  position: relative;
+  background-color: #ffffff;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='700'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.006' numOctaves='5' seed='12' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.22 0 0 0 0 0.18 0 0 0 0 0.12 0 0 0 0.11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' fill='white'/%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+  background-size: 900px 700px;
+  overflow: hidden; z-index: 5;
+}
+.cert::before { display: none; }
+.cert::after { display: none; }
+
+.b-outer { position: absolute; inset: 0; border: 12px solid var(--bc,#c0152a); z-index: 10; pointer-events: none; }
+.b-inner { position: absolute; inset: 20px; border: 5px solid #111; z-index: 10; pointer-events: none; display: none; }
+.b-inner2 { position: absolute; inset: 29px; border: 3px solid var(--bc,#c0152a); z-index: 10; pointer-events: none; display: none; }
+
+/* FLAGS */
+.flag-tl, .flag-tr {
+  position: absolute; top: 0.34in;
+  width: 0.72in; height: 0.72in;
+  border-radius: 50%; border: 2px solid #ccc;
+  z-index: 8; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  background: white;
+}
+.flag-tl { left: 0.36in; }
+.flag-tr { right: 0.36in; }
+.flag-tl img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.flag-tr img {
+  width: 110%; height: 110%; object-fit: cover; display: block;
+  margin-left: -5%; margin-top: 3%;
+}
+
+.wm {
+  position: absolute; top: 56%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 7.2in; height: 7.2in;
+  object-fit: contain; opacity: 0.22;
+  pointer-events: none; z-index: 1;
+}
+
+.tenets {
+  position: absolute; right: 0.45in; top: 50%;
+  transform: translateY(-50%);
+  z-index: 2; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0.28in; text-align: center;
+  width: 1.0in; min-height: 3.1in; max-height: 3.3in;
+  opacity: 0.65; pointer-events: none;
+}
+.tenet-k { font-size: 1.7rem; font-weight: 700; color: #7a7580; line-height: 1.05; letter-spacing: 0.02em; }
+.tenet-e { font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: #8a8580; font-family: 'EB Garamond',serif; margin-top: 3px; display: block; font-weight: 500; }
+
+/* Korean TKD left watermark */
+.tkd-left {
+  position: absolute; left: 0.38in; top: 50%;
+  transform: translateY(-50%);
+  z-index: 2; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0.18in; text-align: center;
+  width: 1.0in; pointer-events: none; opacity: 0.55;
+}
+.tkd-char { font-size: 2.8rem; font-weight: 700; color: #7a7580; line-height: 1.0; }
+
+.patch-bl { width: 1.05in; height: 1.05in; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.patch-br { width: 1.25in; height: 1.25in; object-fit: contain; flex-shrink: 0; }
+
+.content {
+  position: absolute; top: 0.30in; bottom: 0.32in; left: 0.3in; right: 0.3in;
+  z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+}
+.content-top { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 0 1.1in; }
+.content-mid { display: flex; flex-direction: column; align-items: center; gap: 0.06in; width: 100%; flex: 1; justify-content: flex-start; padding: 0.18in 1.1in 0 1.1in; }
+
+.s-bares { font-family: 'Oswald',sans-serif; font-size: 2.9rem; font-weight: 700; color: #c0152a; letter-spacing: 0.07em; display: block; }
+.s-tkd   { font-family: 'Oswald',sans-serif; font-size: 2.15rem; font-weight: 700; color: #1a1a2e; letter-spacing: 0.1em; display: block; }
+.div-dot { width:6px; height:6px; border-radius:50%; background:#c0152a; flex-shrink:0; }
+.cert-title { font-family: 'Cinzel',serif; font-size: 2.85rem; font-weight: 900; letter-spacing: 0.06em; color: #1a1a2e; text-align: center; line-height: 1; }
+.cert-body { font-family: 'EB Garamond',serif; font-style: italic; font-size: 0.95rem; color: #333; text-align: center; line-height: 1.62; max-width: 5.4in; }
+.s-name { font-family: 'Cinzel',serif; font-size: 2.2rem; font-weight: 700; color: #1a1a2e; letter-spacing: 0.04em; text-align: center; }
+.rank-of { font-family: 'EB Garamond',serif; font-style: italic; font-size: 1.05rem; font-weight: 600; color: #444; text-align: center; width: 100%; display: block; }
+.rank-name {
+  font-family: 'Cinzel',serif; font-size: 2.2rem; font-weight: 900;
+  color: var(--bc,#c0152a); letter-spacing: 0.05em; text-align: center;
+  -webkit-text-stroke: 0px;
+  paint-order: stroke fill;
+}
+.testing-line { font-family: 'EB Garamond',serif; font-size: 0.88rem; color: #555; text-align: center; letter-spacing: 0.04em; }
+.sig-row { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; }
+
+@media print {
+  @page { size: 11in 8.5in landscape; margin: 0; }
+  body { background: white !important; padding: 0; }
+  .controls { display: none; }
+  .cert-page { width: 11in; height: 8.5in; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="controls">
+  <div><label>Student Name</label><input type="text" id="c-name" value="William Melton" oninput="update()"></div>
+  <div><label>Border Style</label>
+    <select id="c-border" onchange="updateBorder()">
+      <option value="red">Red — Color Belt</option>
+      <option value="black">Black — Black Belt</option>
+      <option value="instructor">Instructor</option>
+    </select>
+  </div>
+  <div><label>Rank</label><select id="c-rank" onchange="update()"></select></div>
+  <div><label>Date</label><input type="text" id="c-date" value="April 12, 2026" oninput="update()"></div>
+  <button class="ctrl-btn" onclick="window.print()">🖨️ Print</button>
+</div>
+
+<div class="cert-page" id="cert-page">
+  <div class="cert" id="cert" style="--bc:#c0152a;">
+
+    <div class="b-outer" id="b-outer"></div>
+    <div class="b-inner" id="b-inner"></div>
+    <div class="b-inner2" id="b-inner2"></div>
+
+    <div class="flag-tl" style="position:absolute;top:0.34in;left:0.36in;width:0.72in;height:0.72in;border-radius:50%;border:2px solid #ccc;z-index:8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.15);background:white;">
+      <img src="https://barestkd-cyber.github.io/curriculum/Texas-circle.png" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none'">
+    </div>
+    <div style="position:absolute;top:0.34in;right:0.36in;width:0.72in;height:0.72in;border-radius:50%;border:2px solid #ccc;z-index:8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.15);background:white;">
+      <img src="https://barestkd-cyber.github.io/curriculum/korean-flag.jpg" style="width:100%;height:100%;object-fit:contain;display:block;margin:0 auto;" onerror="this.style.display='none'">
+    </div>
+
+    <img class="wm" src="https://barestkd-cyber.github.io/curriculum/BaresTKDPatch.png" onerror="this.style.display='none'">
+
+    <!-- Korean Taekwondo characters — left side watermark mirroring tenets -->
+    <div class="tkd-left">
+      <div class="tkd-char">태</div>
+      <div class="tkd-char">권</div>
+      <div class="tkd-char">도</div>
+    </div>
+
+    <div class="tenets">
+      <div><div class="tenet-k">예의</div><span class="tenet-e">Courtesy</span></div>
+      <div><div class="tenet-k">염치</div><span class="tenet-e">Integrity</span></div>
+      <div><div class="tenet-k">인내</div><span class="tenet-e">Perseverance</span></div>
+      <div><div class="tenet-k">극기</div><span class="tenet-e">Self Control</span></div>
+      <div><div class="tenet-k">백절불굴</div><span class="tenet-e">Indomitable Spirit</span></div>
+    </div>
+
+    <div class="content">
+      <div class="content-top">
+        <div style="margin-top:0.02in;text-align:center;">
+          <img src="https://barestkd-cyber.github.io/curriculum/logo-headline.png" style="height:1.1in;max-width:5in;object-fit:contain;" onerror="this.style.display='none'">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;width:5.2in;margin-top:0.05in;margin-bottom:0.18in;">
+          <div style="flex:1;height:1.5px;background:var(--bc,#c0152a);" class="div-line"></div>
+          <div class="div-dot" id="dd1"></div>
+          <div style="flex:1;height:1.5px;background:var(--bc,#c0152a);" class="div-line"></div>
+        </div>
+      </div>
+
+      <div class="content-mid" style="padding-top:0.18in;justify-content:flex-start;">
+        <div class="cert-title" id="d-title" style="margin-bottom:0.18in;">Certificate of Promotion</div>
+
+        <!-- Standard body -->
+        <div id="body-standard" style="display:flex;flex-direction:column;align-items:center;width:100%;text-align:center;">
+          <div class="cert-body" style="line-height:1.55;max-width:4.8in;">
+            This certificate makes known that upon the recommendation<br>
+            of Senior Lead Instructors, in accordance with<br>
+            the standards of the Bares Taekwondo system,
+          </div>
+          <div class="cert-body" style="line-height:1.55;max-width:4.8in;margin-top:0.12in;">
+            Bares Taekwondo Fitness does hereby award
+          </div>
+          <div class="s-name" id="d-name-std" style="margin-top:0.14in;">William Melton</div>
+          <div class="rank-of" style="margin-top:0.08in;margin-bottom:0.08in;">the rank of</div>
+          <div class="rank-name" id="d-rank-std" style="margin-bottom:0.18in;">Red Belt</div>
+        </div>
+
+        <!-- Instructor body -->
+        <div id="body-instructor" style="display:none;display:flex;flex-direction:column;align-items:center;width:100%;text-align:center;">
+          <div class="cert-body" style="line-height:1.55;max-width:4.8in;text-align:center;width:100%;">
+            This certificate recognizes that
+          </div>
+          <div class="s-name" id="d-name-inst" style="margin-top:0.14in;text-align:center;width:100%;">William Melton</div>
+          <div class="cert-body" style="line-height:1.55;max-width:4.8in;margin-top:0.14in;text-align:center;width:100%;">
+            has demonstrated, according to Senior Lead Instructors who uphold<br>
+            the standards of the Bares Taekwondo instructor system,<br>
+            the qualities required to earn the role of
+          </div>
+          <div class="rank-name" id="d-rank-inst" style="margin-top:0.14in;margin-bottom:0.18in;text-align:center;width:100%;">Instructor's Aide</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.04in;width:100%;">
+          <div style="width:4in;display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:1.5px;background:var(--bc,#c0152a);" class="div-line"></div>
+            <div class="div-dot" id="dd2"></div>
+            <div style="flex:1;height:1.5px;background:var(--bc,#c0152a);" class="div-line"></div>
+          </div>
+          <div class="testing-line" id="d-date">Testing held April 12, 2026 &nbsp;&nbsp;&nbsp; Bares TaeKwonDo Fitness</div>
+        </div>
+      </div>
+
+      <div style="width:100%;display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:0.04in;padding:0 1.45in;">
+        <div style="display:flex;flex-direction:column;gap:2px;align-items:center;margin-left:-10px;">
+          <div style="font-family:'EB Garamond',serif;font-size:1.05rem;font-weight:600;color:#222;letter-spacing:0.02em;padding-bottom:4px;border-bottom:1.5px solid #777;min-width:1.7in;text-align:center;">Race Bares</div>
+          <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:0.73rem;color:#888;text-align:center;">Chief Instructor</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;align-items:center;margin-right:-10px;">
+          <div style="font-family:'EB Garamond',serif;color:transparent;padding-bottom:4px;border-bottom:1.5px solid #777;min-width:1.7in;text-align:center;">&nbsp;</div>
+          <div style="font-family:'EB Garamond',serif;font-style:italic;font-size:0.73rem;color:#888;text-align:center;">Signature</div>
+        </div>
+      </div>
+    </div>
+
+    <img src="https://barestkd-cyber.github.io/curriculum/BaresTKDPatch.png"
+      style="position:absolute;bottom:0.32in;left:0.36in;width:1.05in;height:1.05in;border-radius:50%;object-fit:cover;z-index:6;"
+      onerror="this.style.display='none'">
+    <img src="https://barestkd-cyber.github.io/curriculum/IMAS-Patch.png"
+      style="position:absolute;bottom:0.22in;right:0.29in;width:1.25in;height:1.25in;object-fit:contain;z-index:6;"
+      onerror="this.style.display='none'">
+
+  </div>
+</div>
+
+<script>
+const RANKS = {
+  red: ['Yellow Belt','Senior Yellow Belt','Orange Belt','Senior Orange Belt',
+        'Green Belt','Senior Green Belt','Purple Belt','Senior Purple Belt',
+        'Blue Belt','Senior Blue Belt','Brown Belt','Senior Brown Belt',
+        'Red Belt','Senior Red Belt'],
+  black: ['Probationary Black Belt','Recommended Black Belt',
+          '1st Degree Decided Black Belt','1st Degree Decided Black Belt Lvl. 2',
+          '1st Degree Senior Black Belt','1st Degree Senior Black Belt Lvl. 2',
+          '2nd Degree Black Belt','2nd Degree Black Belt Lvl. 2',
+          '2nd Degree Decided Black Belt','2nd Degree Decided Black Belt Lvl. 2',
+          '2nd Degree Senior Black Belt','2nd Degree Senior Black Belt Lvl. 2'],
+  instructor: ["Instructor's Aide","Instructor Trainee","Assistant Instructor",
+               "Lead Instructor","Senior Lead Instructor"]
+};
+
+const GOLD='#c8972a', RED='#c0152a', BLACK='#111111', BLUE='#003893';
+const BELT_COLORS = {
+  'Yellow Belt':        '#e8c000',
+  'Senior Yellow Belt': '#e8c000',
+  'Orange Belt':        '#d4600a',
+  'Senior Orange Belt': '#d4600a',
+  'Green Belt':         '#1a7a1a',
+  'Senior Green Belt':  '#1a7a1a',
+  'Purple Belt':        '#4a0080',
+  'Senior Purple Belt': '#4a0080',
+  'Blue Belt':          '#1a3a9a',
+  'Senior Blue Belt':   '#1a3a9a',
+  'Brown Belt':         '#7a3a0a',
+  'Senior Brown Belt':  '#7a3a0a',
+  'Red Belt':           RED,
+  'Senior Red Belt':    RED,
+};
+
+function isSenior(rank){ return rank.startsWith('Senior '); }
+
+function getRankGroup(b){ return b==='red'?'red':b==='black'?'black':'instructor'; }
+
+function populateRanks(border){
+  const sel=document.getElementById('c-rank');
+  sel.innerHTML='';
+  RANKS[getRankGroup(border)].forEach(r=>{
+    const o=document.createElement('option');
+    o.value=r; o.textContent=r; sel.appendChild(o);
+  });
+}
+
+function getBorderForRank(rank){
+  if(rank==="Instructor's Aide")      return 'aide';
+  if(rank==="Instructor Trainee")     return 'trainee';
+  if(rank==="Assistant Instructor")   return 'asst';
+  if(rank==="Lead Instructor")        return 'lead';
+  if(rank==="Senior Lead Instructor") return 'senior';
+  return 'trainee';
+}
+
+function applyBorder(borderType, rank){
+  const cert=document.getElementById('cert');
+  const bO=document.getElementById('b-outer');
+  const bI=document.getElementById('b-inner');
+  const bI2=document.getElementById('b-inner2');
+  bI.style.display='none'; bI2.style.display='none';
+  bI.style.outline='none';
+
+  let bc=RED, rankColor=RED;
+
+  if(borderType==='red'){
+    // Color belt — use rank-specific color
+    const color = BELT_COLORS[rank] || RED;
+    bc = color; rankColor = color;
+    bO.style.borderColor = color;
+    bI.style.display = 'block';
+    bI.style.borderColor = isSenior(rank) ? BLACK : color;
+    // Outer black outline for senior belts using paint-order stroke fill
+    const el = document.getElementById('d-rank-std');
+    if(isSenior(rank)){
+      el.style.webkitTextStroke = '3px #000000';
+      el.style.paintOrder = 'stroke fill';
+    } else {
+      el.style.webkitTextStroke = '';
+      el.style.paintOrder = '';
+    }
+    el.style.textShadow = 'none';
+  } else if(borderType==='black'){
+    bc=BLACK; rankColor=BLACK; bO.style.borderColor=BLACK;
+    bI.style.display='block'; bI.style.borderColor=BLACK;
+  } else if(borderType==='aide'){
+    bc=RED; bO.style.borderColor=RED;
+    bI.style.display='block'; bI.style.borderColor=BLUE;
+  } else if(borderType==='trainee'){
+    bc=RED; bO.style.borderColor=RED;
+    bI.style.display='block'; bI.style.borderColor=RED;
+    bI2.style.display='block'; bI2.style.borderColor=RED;
+  } else if(borderType==='asst'){
+    bc=RED; bO.style.borderColor=RED;
+    bI.style.display='block'; bI.style.borderColor=BLACK;
+  } else if(borderType==='lead'){
+    bc=BLACK; rankColor=BLACK; bO.style.borderColor=BLACK;
+    bI.style.display='block'; bI.style.borderColor=BLACK;
+    bI2.style.display='block'; bI2.style.borderColor=BLACK;
+  } else if(borderType==='senior'){
+    bc=GOLD; rankColor=GOLD; bO.style.borderColor=GOLD;
+    bI.style.display='block'; bI.style.borderColor=BLACK;
+  }
+
+  cert.style.setProperty('--bc', bc);
+  document.getElementById('d-rank-std').style.color=rankColor;
+  document.getElementById('d-rank-inst').style.color=rankColor;
+  if(borderType !== 'red'){
+    const el = document.getElementById('d-rank-std');
+    el.style.textShadow='none';
+    el.style.webkitTextStroke='';
+    el.style.paintOrder='';
+  }
+  document.querySelectorAll('.div-dot').forEach(d=>d.style.background=bc);
+  document.querySelectorAll('.div-line').forEach(d=>d.style.background=bc);
+}
+
+function updateBorder(){
+  const border=document.getElementById('c-border').value;
+  const isInst=border==='instructor';
+  populateRanks(border);
+  document.getElementById('body-standard').style.display=isInst?'none':'flex';
+  document.getElementById('body-instructor').style.display=isInst?'flex':'none';
+  document.getElementById('d-title').textContent=isInst?'Certificate of Advancement':'Certificate of Promotion';
+  update();
+}
+
+function update(){
+  const name=document.getElementById('c-name').value;
+  const rank=document.getElementById('c-rank').value;
+  const date=document.getElementById('c-date').value;
+  const border=document.getElementById('c-border').value;
+  const isInst=border==='instructor';
+  document.getElementById('d-name-std').textContent=name;
+  document.getElementById('d-name-inst').textContent=name;
+  document.getElementById('d-rank-std').textContent=rank;
+  document.getElementById('d-rank-inst').textContent=rank;
+  const prefix=isInst?'Awarded':'Testing held';
+  document.getElementById('d-date').innerHTML=prefix+' '+date+'&nbsp;&nbsp;&nbsp; Bares TaeKwonDo Fitness';
+  const borderType = isInst ? getBorderForRank(rank) : border;
+  applyBorder(borderType, rank);
+}
+
+updateBorder();
+</script>
+</body>
+</html>
