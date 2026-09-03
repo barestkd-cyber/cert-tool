@@ -294,6 +294,60 @@ const BELT_COLORS = {
 
 function isSenior(rank){ return rank.startsWith('Senior '); }
 
+/* ── prefill from the URL ──────────────────────────────────────────────
+ * The CRM stores "1st Degree Decided Level 2"; this tool lists it as
+ * "1st Degree Decided Black Belt Lvl. 2". Same rank, two spellings, so
+ * incoming names are matched loosely on letters and digits alone.
+ */
+function certNorm(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]/g,""); }
+
+function certRankLookup(want){
+  var w = certNorm(want);
+  if(!w) return null;
+  var groups = ["red","black","instructor"], i, j, listName;
+  for(i=0;i<groups.length;i++){
+    var list = RANKS[groups[i]];
+    for(j=0;j<list.length;j++){ if(certNorm(list[j]) === w) return { border: groups[i], rank: list[j] }; }
+  }
+  // "Level 2" vs "Lvl. 2" and similar: compare with those words removed too
+  var w2 = w.replace(/blackbelt/g,"").replace(/lvl/g,"level");
+  for(i=0;i<groups.length;i++){
+    var l2 = RANKS[groups[i]];
+    for(j=0;j<l2.length;j++){
+      var c = certNorm(l2[j]).replace(/blackbelt/g,"").replace(/lvl/g,"level");
+      if(c === w2) return { border: groups[i], rank: l2[j] };
+    }
+  }
+  return null;
+}
+
+function certApplyUrl(){
+  var q;
+  try{ q = new URLSearchParams(location.search); }catch(e){ return; }
+  var name = q.get("name"), rank = q.get("rank"), date = q.get("date");
+  if(name){ document.getElementById("c-name").value = name; }
+  if(date){ document.getElementById("c-date").value = date; }
+  if(rank){
+    var hit = certRankLookup(rank);
+    if(hit){
+      document.getElementById("c-border").value = hit.border;
+      populateRanks(hit.border);
+      document.getElementById("c-rank").value = hit.rank;
+    } else {
+      // Say so rather than printing whatever happened to be selected.
+      console.warn("cert: unknown rank " + rank);
+      alert("This tool does not carry the rank \"" + rank + "\". Pick the right one before printing.");
+    }
+  }
+  update();
+  if(q.get("print") === "1"){
+    // Never print before the fonts and the fit pass are done - the same
+    // mistake that made batch certificates come out differently.
+    var go = function(){ if(window.certFitAll) window.certFitAll(); setTimeout(function(){ window.print(); }, 250); };
+    if(document.fonts && document.fonts.ready){ document.fonts.ready.then(go)["catch"](go); } else { setTimeout(go, 600); }
+  }
+}
+
 function getRankGroup(b){ return b==='red'?'red':b==='black'?'black':'instructor'; }
 
 function populateRanks(border){
@@ -403,6 +457,7 @@ function update(){
 }
 
 updateBorder();
+certApplyUrl();
 </script>
 <script>
 /* Shrink a name or rank too long for its line, once the web fonts are in.
