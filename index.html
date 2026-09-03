@@ -126,7 +126,7 @@ body { background: #777; display: flex; flex-direction: column; align-items: cen
 .sig-row { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; }
 
 @media print {
-  @page { size: 11in 8.5in landscape; margin: 0; }
+  @page { size: 11in 8.5in; margin: 0; }   /* NOT "landscape" too: lengths plus an orientation keyword is malformed and the whole rule gets dropped */
   body { background: white !important; padding: 0; }
   .controls { display: none; }
   .cert-page { width: 11in; height: 8.5in; }
@@ -185,7 +185,7 @@ body { background: #777; display: flex; flex-direction: column; align-items: cen
     <div class="content">
       <div class="content-top">
         <div style="margin-top:0.02in;text-align:center;">
-          <img src="https://barestkd-cyber.github.io/curriculum/logo-headline.png" style="height:1.1in;max-width:5in;object-fit:contain;" onerror="this.style.display='none'">
+          <img src="https://barestkd-cyber.github.io/curriculum/logo-headline.png" style="width:4.76in;height:1.1in;object-fit:contain;" onerror="this.style.display='none'">
         </div>
         <div style="display:flex;align-items:center;gap:8px;width:5.2in;margin-top:0.05in;margin-bottom:0.18in;">
           <div style="flex:1;height:1.5px;background:var(--bc,#c0152a);" class="div-line"></div>
